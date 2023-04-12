@@ -1,0 +1,10 @@
+Пример переключения на первый видео вход
+
+int index;
+
+index = 0;
+
+if (-1 == ioctl(fd, VIDIOC_S_INPUT, &index)) {
+    perror("VIDIOC_S_INPUT");
+    exit(EXIT_FAILURE);
+}
