@@ -14,3 +14,47 @@
 видео и аудио коннекторов определено в поле audioset структуры v4l2_input или v4l2_output,
 где каждый бит представляет собой порядковый номер, начиная с нуля одного аудио входа или
 выхода.
+
+Для того чтобы узнать подробнее о номерах и атрибутах доступных входов и выходов приложения
+могут пронумеровать их с помощью ioctl VIDIOC_ENUMAUDIO и VIDIOC_ENUMAUDOUT. Структура 
+v4l2_audio вернется при вызове VIDIOC_ENUMAUDIO, этот ioctl так же содержит сигнал - 
+информацию о статусе состояния аудиовхода на момент запроса.
+
+VIDIOC_G_AUDIO и VIDIOC_G_AUDOUT соопщают текущий аудио вход и выход соответственно.
+
+Обратите внимание, что в отличии от  VIDIOC_G_INPUT and VIDIOC_G_OUTPUT аудио ioctl'ы
+возвращают структуру, а не просто индекс.
+
+Чтобы выбрать аудио вход и поменять его свойства приложения вызывают  VIDIOC_S_AUDIO ioctl.
+Для аудио выхода соотвественно следует вызывать  VIDIOC_S_AUDOUT ioctl.
+
+Драйверы должны реализовывать все ioctl'ы аудио входов, когда устройство имеет поддержку
+многопоточного выбора аудио входа и все ioctl'ы аудио выходов если поддерживает многопоточную
+запись в устройство. Когда устройство имеет любые аудио входы или выходы драйвер должен
+устанавливать флаг V4L2_CAP_AUDIO в структуре  v4l2_capability возвращаемой ioctl VIDIOC_QUERYCAP.
+
+1.5.1 Пример: Информация о текущем аудио входе.
+
+struct v4l2_audio audio;
+
+memset(&audio, 0, sizeof(audio));
+
+if (-1 == ioctl(fd, VIDIOC_G_AUDIO, &audio)) {
+    perror("VIDIOC_G_AUDIO");
+    exit(EXIT_FAILURE);
+}
+
+printf("Current input: %s\\n", audio.name);
+
+1.5.2 Пример: Переключение на первый аудио вход
+
+struct v4l2_audio audio;
+
+memset(&audio, 0, sizeof(audio)); /* clear audio.mode, audio.reserved */
+
+audio.index = 0;
+
+if (-1 == ioctl(fd, VIDIOC_S_AUDIO, &audio)) {
+    perror("VIDIOC_S_AUDIO");
+    exit(EXIT_FAILURE);
+}
