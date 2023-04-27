@@ -25,7 +25,61 @@ ioctl VIDIOC_ENUMSTD.
 “PAL-B/G” или PAL-I. Похожие композитные входы могут порушитьс стандарты перечисляя 
 “PAL-B/G/H/I”, “NTSC-M” и “SECAM-D/K”. Некоторые пользователи уже запутались в технических
 терминах PAL, NTSC и SECAM. Нет смысла просить их различать B, G, D или K, когда программное 
-или аппаратное обеспечение может сделать это автоматически.   
+или аппаратное обеспечение может сделать это автоматически.
+
+Чтобы запросить и выбрать стандарт используемый текущим видео входом или выходом приложения
+вызывают VIDIOC_G_STD и VIDIOC_S_STD йоктлы соотвественно.
+
+Специальные правила применимы к устройствам таким как USB камеры, где понятие видео стандарта
+не имеет большого смысла. Это более относится к захватывающим или устройствам выдающим видео
+потоки: 
+    - Не способные захватывать поля или кадры номинальной частоты видео стандарта.
+    - Не поддерживающие стандарт соовсем.
+
+В таком случае драйвер должен устанавливать значение поля std структуры v4l2_input и структуры
+v4l2_output по умолчанию нулем и VIDIOC_G_STD, VIDIOC_S_STD, ioctl VIDIOC_QUERYSTD и 
+ioctl VIDIOC_ENUMSTD должны возвращать коды ошибок ENOTTY или EINVAL.
+
+Приложения могут использовать флаги input capabilities(входные возможности) и output capabilities
+(возможности исходящего потока), чтобы определить какие видео стандарты и йоктлы могут быть
+использованы, с предоставленным входом или выходом.
+
+1.7.1 Пример: Информация о текущем видео стандарте.
+
+v4l2_std_id std_id;
+struct v4l2_standard standard;
+
+if (-1 == ioctl(fd, VIDIOC_G_STD, &std_id)) {
+    /* Когда VIDIOC_ENUMSTD всегда возвращает ошибку ENOTTY
+       - отсутствует видео устройство или оно падает от исключения
+        выброшенного USB и если VIDIOC_G_STD возвращает ENOTTY
+        это не ошибка. */ 
+       
+
+    perror("VIDIOC_G_STD");
+    exit(EXIT_FAILURE);
+}
+
+memset(&standard, 0, sizeof(standard));
+standard.index = 0;
+
+while (0 == ioctl(fd, VIDIOC_ENUMSTD, &standard)) {
+    if (standard.id & std_id) {
+           printf("Current video standard: %s\\n", standard.name);
+           exit(EXIT_SUCCESS);
+    }
+
+    standard.index++;
+}
+
+/* EINVAL указывает окончание перечисления, которое не может быть пустым
+    пока устройство падает от исключения выброшенного USB */
+
+if (errno == EINVAL || standard.index == 0) {
+    perror("VIDIOC_ENUMSTD");
+    exit(EXIT_FAILURE);
+}
+
 
 Краткая справка:
 struct v4l2_input        - см 8.18
@@ -33,11 +87,13 @@ struct v4l2_output       - см 8.18
 ioctl VIDIOC_ENUMINPUT   - см 8.18
 ioctl VIDIOC_ENUMOUTPUT  - см 8.18
 ioctl VIDIOC_ENUMSTD     - см 8.20
-B/PAL -
-G/PAL -
-l/PAL -
-PAL-B/G”
-PAL-I
-PAL-D/G/H/I
-NTSC-M
-SECAM-D/K”
+B/PAL -                  - https://ru.wikipedia.org/wiki/PAL
+G/PAL -                  - https://ru.wikipedia.org/wiki/PAL
+l/PAL -                  - https://ru.wikipedia.org/wiki/PAL
+PAL-B/G”                 - https://ru.wikipedia.org/wiki/PALhttps://ru.wikipedia.org/wiki/PAL
+PAL-I                    - https://ru.wikipedia.org/wiki/PAL
+PAL-D/G/H/I              - https://ru.wikipedia.org/wiki/PAL
+NTSC-M                   - https://ru.wikipedia.org/wiki/NTSC
+SECAM-D/K”               - https://ru.wikipedia.org/wiki/SECAM
+input capabilities       - см 8.18
+output capabilities      - см 8.18
