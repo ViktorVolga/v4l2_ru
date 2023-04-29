@@ -80,6 +80,76 @@ if (errno == EINVAL || standard.index == 0) {
     exit(EXIT_FAILURE);
 }
 
+1.7.2 Пример: вывод видео стандартов поддерживаемых устройством поддерживаемых
+    текущим входом.
+
+struct v4l2_input input;
+struct v4l2_standard standard;
+
+memset(&input, 0, sizeof(input));
+
+if (-1 == ioctl(fd, VIDIOC_G_INPUT, &input.index)) {
+    perror("VIDIOC_G_INPUT");
+    exit(EXIT_FAILURE);
+}
+
+if (-1 == ioctl(fd, VIDIOC_ENUMINPUT, &input)) {
+    perror("VIDIOC_ENUM_INPUT");
+    exit(EXIT_FAILURE);
+}
+
+printf("Current input %s supports:\\n", input.name);
+
+memset(&standard, 0, sizeof(standard));
+standard.index = 0;
+
+while (0 == ioctl(fd, VIDIOC_ENUMSTD, &standard)) {
+    if (standard.id & input.std)
+        printf("%s\\n", standard.name);
+
+    standard.index++;
+}
+
+/* EINVAL указывает конец перечисления, который не может быть пустым до тех пор
+    пока это устройство не упадет от исключения выброшеного USB */
+
+if (errno != EINVAL || standard.index == 0) {
+    perror("VIDIOC_ENUMSTD");
+    exit(EXIT_FAILURE);
+}
+
+1.7.3 Пример: Выбор нового видео стандарта.
+
+struct v4l2_input input;
+v4l2_std_id std_id;
+
+memset(&input, 0, sizeof(input));
+
+if (-1 == ioctl(fd, VIDIOC_G_INPUT, &input.index)) {
+    perror("VIDIOC_G_INPUT");
+    exit(EXIT_FAILURE);
+}
+
+if (-1 == ioctl(fd, VIDIOC_ENUMINPUT, &input)) {
+    perror("VIDIOC_ENUM_INPUT");
+    exit(EXIT_FAILURE);
+}
+
+if (0 == (input.std & V4L2_STD_PAL_BG)) {
+    fprintf(stderr, "Oops. B/G PAL is not supported.\\n");
+    exit(EXIT_FAILURE);
+}
+
+/* Обратите внимание, что это должно работать так же,
+    когда поддерживается только В или G/PAL */
+
+
+std_id = V4L2_STD_PAL_BG;
+
+if (-1 == ioctl(fd, VIDIOC_S_STD, &std_id)) {
+    perror("VIDIOC_S_STD");
+    exit(EXIT_FAILURE);
+}
 
 Краткая справка:
 struct v4l2_input        - см 8.18
