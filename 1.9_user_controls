@@ -85,3 +85,36 @@ V4L2_CID_DO_WHITE_BALANCE (button)
     Это контроль действий. Когда значение установлено (установленное значение игнорируется) устройство выполнит 
     автоматическую настройку баланса белого и сохранит текущие настройки. Контраст с V4L2_CID_AUTO_WHITE_BALANCE,
     который, когда активирован, продолжает корректировать баланс белого.
+
+V4L2_CID_RED_BALANCE (integer)
+    Баланс красного.
+
+V4L2_CID_BLUE_BALANCE (integer)
+    Баланс синего.
+
+V4L2_CID_GAMMA (integer)
+    Настройка Гаммы.
+
+V4L2_CID_WHITENESS (integer)
+    Белизна Whiteness для черно-белых устройств. Синоним V4L2_CID_GAMMA. Эта настройка устарела и не должна
+    использоваться в современных драйверах и приложениях.
+
+V4L2_CID_EXPOSURE (integer)
+    Выдержка (камеры). [Модуль?]
+
+V4L2_CID_AUTOGAIN (boolean)
+    Автоматическое увеличение/выдержка.
+
+V4L2_CID_GAIN (integer)
+    Контроль увеличения.
+
+V4L2_CID_HFLIP (boolean)
+    Отражает картинку горизонтально.
+
+V4L2_CID_VFLIP (boolean)
+    Отражает картинку вертикально.
+
+V4L2_CID_POWER_LINE_FREQUENCY (enum)
+    Включение фильтра частоты питающей линии для избежания мерцания. Допустимые значения: 
+    V4L2_CID_POWER_LINE_FREQUENCY_DISABLED (0), V4L2_CID_POWER_LINE_FREQUENCY_50HZ (1), 
+    V4L2_CID_POWER_LINE_FREQUENCY_60HZ (2) and V4L2_CID_POWER_LINE_FREQUENCY_AUTO (3).
