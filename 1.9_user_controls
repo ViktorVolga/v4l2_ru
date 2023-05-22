@@ -146,3 +146,23 @@ V4L2_CID_COLOR_KILLER (boolean)
 
 V4L2_CID_COLORFX (enum)
     Выбирает цветовой эффект. Можно выбрать одно из значений:
+
+V4L2_COLORFX_NONE	цветвоой эффект выключен.
+V4L2_COLORFX_ANTIQUE	Старящий (под старое фото) эффект.
+V4L2_COLORFX_ART_FREEZE	Морозный цветовой эффект.
+V4L2_COLORFX_AQUA	Водные цвета, холодные тон.
+V4L2_COLORFX_BW	Чернобелый.
+V4L2_COLORFX_EMBOSS	Тиснение, блики и тени заменяют светлые/темные границы и низкоконтрастные границы становятся
+    серым фоном.
+V4L2_COLORFX_GRASS_GREEN	Зеленая трава.
+V4L2_COLORFX_NEGATIVE	Негатив.
+V4L2_COLORFX_SEPIA	Сепия.
+V4L2_COLORFX_SKETCH	Эскиз.
+V4L2_COLORFX_SKIN_WHITEN	Отбеливание кожи.
+V4L2_COLORFX_SKY_BLUE	Небесно голубой.
+V4L2_COLORFX_SOLARIZATION	Соляризация, изображение частично инвертируется по тону, инвертируется только значение 
+    выше и ниже определенного порога.
+V4L2_COLORFX_SILHOUETTE	Силуэт (набросок).
+V4L2_COLORFX_VIVID	Яркие цвета.
+V4L2_COLORFX_SET_CBCR	Компоненты цветности Cb и Cr заменяются фиксированным коэфициентом определенным настройкой 
+    4L2_CID_COLORFX_CBCR control.
