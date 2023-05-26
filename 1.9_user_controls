@@ -209,3 +209,144 @@ V4L2_CID_LASTP1
 V4L2_CID_PRIVATE_BASE
     Первый пользовательский, специфичный для драйвера элемент управления. Приложения зависящие от особых настроект должны 
     проверять имя драйвера и версию. (см. 1.2 Запрос возможностей).
+
+Приложения могут получить список доступных опций при помощи йоктлов VIDIOC_QUERYCTRL, VIDIOC_QUERY_EXT_CTRL и 
+    VIDIOC_QUERYMENU и VIDIOC_QUERYMENU, получить и установить настройки при помощи йоктлов VIDIOC_G_CTRL и VIDIOC_S_CTRL.
+    Драйверы должны реализовывать VIDIOC_QUERYCTRL, VIDIOC_G_CTRL и VIDIOC_S_CTRL когда устройство имееет одну или более 
+    настроек, VIDIOC_QUERYMENU когда имеет одно или более настроечное меню.
+
+1.9.2 Пример: Перечисление всех пользовательских настроек.
+
+struct v4l2_queryctrl queryctrl;
+struct v4l2_querymenu querymenu;
+
+static void enumerate_menu(void)
+{
+    printf("  Menu items:\\n");
+
+    memset(&querymenu, 0, sizeof(querymenu));
+    querymenu.id = queryctrl.id;
+
+    for (querymenu.index = queryctrl.minimum;
+         querymenu.index <= queryctrl.maximum;
+         querymenu.index++) {
+        if (0 == ioctl(fd, VIDIOC_QUERYMENU, &querymenu)) {
+            printf("  %s\\n", querymenu.name);
+        }
+    }
+}
+
+memset(&queryctrl, 0, sizeof(queryctrl));
+
+for (queryctrl.id = V4L2_CID_BASE;
+     queryctrl.id < V4L2_CID_LASTP1;
+     queryctrl.id++) {
+    if (0 == ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl)) {
+        if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED)
+            continue;
+
+        printf("Control %s\\n", queryctrl.name);
+
+        if (queryctrl.type == V4L2_CTRL_TYPE_MENU)
+            enumerate_menu();
+    } else {
+        if (errno == EINVAL)
+            continue;
+
+        perror("VIDIOC_QUERYCTRL");
+        exit(EXIT_FAILURE);
+    }
+}
+
+for (queryctrl.id = V4L2_CID_PRIVATE_BASE;;
+     queryctrl.id++) {
+    if (0 == ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl)) {
+        if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED)
+            continue;
+
+        printf("Control %s\\n", queryctrl.name);
+
+        if (queryctrl.type == V4L2_CTRL_TYPE_MENU)
+            enumerate_menu();
+    } else {
+        if (errno == EINVAL)
+            break;
+
+        perror("VIDIOC_QUERYCTRL");
+        exit(EXIT_FAILURE);
+    }
+}
+
+1.9.3. Пример: Перечисление всех пользовательских настроек (альтернативный вариант)
+memset(&queryctrl, 0, sizeof(queryctrl));
+
+queryctrl.id = V4L2_CTRL_CLASS_USER | V4L2_CTRL_FLAG_NEXT_CTRL;
+while (0 == ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl)) {
+    if (V4L2_CTRL_ID2CLASS(queryctrl.id) != V4L2_CTRL_CLASS_USER)
+        break;
+    if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED)
+        continue;
+
+    printf("Control %s\\n", queryctrl.name);
+
+    if (queryctrl.type == V4L2_CTRL_TYPE_MENU)
+        enumerate_menu();
+
+    queryctrl.id |= V4L2_CTRL_FLAG_NEXT_CTRL;
+}
+if (errno != EINVAL) {
+    perror("VIDIOC_QUERYCTRL");
+    exit(EXIT_FAILURE);
+}
+
+1.9.4. Пример: Изменение настроек
+struct v4l2_queryctrl queryctrl;
+struct v4l2_control control;
+
+memset(&queryctrl, 0, sizeof(queryctrl));
+queryctrl.id = V4L2_CID_BRIGHTNESS;
+
+if (-1 == ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl)) {
+    if (errno != EINVAL) {
+        perror("VIDIOC_QUERYCTRL");
+        exit(EXIT_FAILURE);
+    } else {
+        printf("V4L2_CID_BRIGHTNESS is not supportedn");
+    }
+} else if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED) {
+    printf("V4L2_CID_BRIGHTNESS is not supportedn");
+} else {
+    memset(&control, 0, sizeof (control));
+    control.id = V4L2_CID_BRIGHTNESS;
+    control.value = queryctrl.default_value;
+
+    if (-1 == ioctl(fd, VIDIOC_S_CTRL, &control)) {
+        perror("VIDIOC_S_CTRL");
+        exit(EXIT_FAILURE);
+    }
+}
+
+memset(&control, 0, sizeof(control));
+control.id = V4L2_CID_CONTRAST;
+
+if (0 == ioctl(fd, VIDIOC_G_CTRL, &control)) {
+    control.value += 1;
+
+    /* Драйвер может зажать значение или вернуть ERANGE, игнорируем здесь */
+
+    if (-1 == ioctl(fd, VIDIOC_S_CTRL, &control)
+        && errno != ERANGE) {
+        perror("VIDIOC_S_CTRL");
+        exit(EXIT_FAILURE);
+    }
+/* Игнорируем если V4L2_CID_CONTRAST не поддерживается*/
+} else if (errno != EINVAL) {
+    perror("VIDIOC_G_CTRL");
+    exit(EXIT_FAILURE);
+}
+
+control.id = V4L2_CID_AUDIO_MUTE;
+control.value = 1; /* Тишина */
+
+/* Ошибки игнорируются */
+ioctl(fd, VIDIOC_S_CTRL, &control);
