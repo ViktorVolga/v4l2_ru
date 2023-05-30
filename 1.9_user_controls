@@ -356,3 +356,7 @@ V4L2_CID_PRIVATE_BASE ID для разных настроек. Это делае
 значение этих настроек разное в рахных драйверах. Чтобы решить эту проблему драйверы используют уникальные  
 IDs и V4L2_CID_PRIVATE_BASE IDs сопостовляются с этими уникальными IDs ядром. Воспринимайте V4L2_CID_PRIVATE_BASE 
 IDs как псевдонимы для реальных IDs.
+
+Многие приложения сегодня все еще используют V4L2_CID_PRIVATE_BASE IDs вместо использования VIDIOC_QUERYCTRL, 
+VIDIOC_QUERY_EXT_CTRL и VIDIOC_QUERYMENU с V4L2_CTRL_FLAG_NEXT_CTRL флагом чтобы перечислить все ID, так что 
+поддержка V4L2_CID_PRIVATE_BASE все еще вокруг
